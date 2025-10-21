@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إلى سُجود 🎀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* تعريف اللون الوردي النيون */
+            --neon-pink: #ff007f;
+            --soft-pink: #ff69b4;
+            --font-family: 'Amiri', serif;
+        }
+
+        body {
+            /* خلفية داكنة لإبراز النيون */
+            background-color: #000000; 
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* لإخفاء أي شريط تمرير قد يظهر */
+        }
+
+        /* تنسيق طبقة محتوى الموقع (الاسم والشعر) */
+        #content {
+            position: absolute;
+            z-index: 10;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            direction: rtl; /* لضمان صحة اللغة العربية */
+        }
+
+        /* تأثير النيون على الاسم (سجود) */
+        h1 {
+            font-family: var(--font-family);
+            font-size: 5rem; /* حجم كبير للعنوان */
+            line-height: 1.2;
+            margin: 0 0 20px 0;
+            /* تأثير النيون الوردي */
+            color: var(--soft-pink);
+            text-shadow:
+                0 0 7px var(--neon-pink),
+                0 0 10px var(--neon-pink),
+                0 0 21px var(--neon-pink),
+                0 0 42px var(--soft-pink),
+                0 0 82px var(--soft-pink);
+        }
+
+        /* تأثير النيون على الشعر */
+        .poem {
+            font-family: var(--font-family);
+            font-size: 1.5rem;
+            color: var(--soft-pink);
+            text-shadow:
+                0 0 5px var(--neon-pink),
+                0 0 10px var(--soft-pink);
+            white-space: pre-line; /* للحفاظ على تنسيق الأبيات */
+            max-width: 80vw;
+            margin: 0 auto;
+        }
+
+        /* تنسيق خلفية الكانفاس لتكون فوق الخلفية السوداء مباشرة */
+        #neonCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="neonCanvas"></canvas>
+
+    <div id="content">
+        <h1>سُجود 🎀</h1>
+
+        <div class="poem">
+            مِن طِيبِ سُجْدَةِ رُوحٍ أشرَقَت سُجُودُ،
+            فالوَجهُ بَدرٌ، والقَلبُ وَردٌ يَجُودُ.
+            لها مِنَ الحُسنِ ما يَروي النُّفُوسَ إذا،
+            نَظَرَتْ، فَعادَ الهُدَى بَعدَ أن كادَ يَحِيدُ.
+            مَشيُ الهُدوءِ وفي لَحظٍ بَلا دَلَلٍ،
+            كَنَسمَةِ الفَجرِ لا تَشقى ولا تَعُودُ.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('neonCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            // عند تغيير الحجم، قم بمسح وإعادة إنشاء النقاط للحفاظ على الكثافة
+            particles.length = 0;
+            createParticles(20); // عدد النقاط
+        });
+
+        // إحداثيات الماوس/اللمس (الهدف)
+        let targetX = width / 2;
+        let targetY = height / 2;
+        let isInteractive = false;
+
+        // تحديث إحداثيات الهدف بناءً على حركة الماوس أو اللمس
+        const updateTarget = (x, y) => {
+            targetX = x;
+            targetY = y;
+            isInteractive = true;
+            // إعادة ضبط مؤقت التفاعل
+            clearTimeout(interactionTimer);
+            interactionTimer = setTimeout(() => isInteractive = false, 500);
+        };
+
+        // تتبع حركة الماوس
+        canvas.addEventListener('mousemove', (e) => updateTarget(e.clientX, e.clientY));
+
+        // تتبع اللمس (للهواتف)
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                updateTarget(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        });
+
+        // مؤقت لإعادة الوضع إلى الحركة التلقائية عند التوقف عن التفاعل
+        let interactionTimer = null;
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = Math.random() * 2 + 1; // حجم عشوائي
+                this.color = '255, 0, 127'; // لون وردي نيون (RGB)
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 0.5,
+                    y: (Math.random() - 0.5) * 0.5
+                };
+                this.alpha = 0.5;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+                ctx.shadowColor = `rgba(${this.color}, 1)`; // تأثير التوهج
+                ctx.shadowBlur = this.radius * 3;
+                ctx.fill();
+            }
+
+            update() {
+                // الحركة التلقائية (مهمة للهاتف)
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                // ارتداد من الحواف
+                if (this.x + this.radius > width || this.x - this.radius < 0) this.velocity.x = -this.velocity.x;
+                if (this.y + this.radius > height || this.y - this.radius < 0) this.velocity.y = -this.velocity.y;
+
+                // الحركة نحو الهدف عند التفاعل
+                if (isInteractive) {
+                    const dx = targetX - this.x;
+                    const dy = targetY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // جذب النقاط نحو الهدف ببطء
+                    if (distance < 500) {
+                        const force = 0.005; // قوة الجذب
+                        this.velocity.x += dx * force;
+                        this.velocity.y += dy * force;
+                    }
+                }
+
+                // تخفيف السرعة لجعل الحركة أكثر سلاسة (مقاومة الهواء)
+                this.velocity.x *= 0.99;
+                this.velocity.y *= 0.99;
+
+                this.draw();
+            }
+        }
+
+        let particles = [];
+        const createParticles = (count) => {
+            for (let i = 0; i < count; i++) {
+                // البدء من موقع عشوائي على الشاشة
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                particles.push(new Particle(x, y));
+            }
+        };
+
+        // إنشاء النقاط النيون
+        createParticles(25); 
+
+        // حلقة الرسوم المتحركة الرئيسية
+        function animate() {
+            requestAnimationFrame(animate);
+            // مسح الكانفاس بمسحة شفافة لترك أثر خفيف (تأثير الذيل)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(particle => {
+                particle.update();
+            });
+        }
+
+        animate();
+    </script>
+
+</body>
+</html>
